@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reminders Agent Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f0f2f8;--card:#fff;--bdr:#e2e5ef;
+  --blue:#3b5bdb;--bluelt:#eef2ff;--bluedk:#2f4ac0;
+  --grn:#0f9b6a;--grnlt:#e6f7f1;
+  --red:#e03131;--redlt:#fff0f0;
+  --orn:#e67700;--ornlt:#fff4e0;
+  --purp:#7048e8;--purplt:#f3f0ff;
+  --tx:#1a1d2e;--tx2:#5a607a;--tx3:#9198b5;
+  --r:14px;--r2:9px;
+  --sh:0 1px 3px rgba(30,40,90,.07),0 6px 20px rgba(30,40,90,.07);
+  --sh2:0 8px 32px rgba(30,40,90,.13);
+  --tr:.16s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased}
+.hide{display:none!important}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+.anim{animation:fadeUp .25s ease both}
+
+/* SPINNER */
+.ld{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite;vertical-align:middle;margin-right:7px}
+
+/* SKELETON */
+.sk{background:linear-gradient(90deg,#eef0f8 25%,#e4e7f3 50%,#eef0f8 75%);background-size:200% 100%;animation:shimmer 1.3s infinite;border-radius:8px}
+
+/* ── LOGIN ───────────────────────────────────── */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(145deg,#e8edff 0%,#f0f2f8 55%,#fff 100%);padding:20px}
+.lcard{background:var(--card);border-radius:22px;padding:44px 38px 36px;width:100%;max-width:400px;box-shadow:var(--sh2);animation:popIn .35s ease both}
+.llogo{text-align:center;font-size:42px;line-height:1;margin-bottom:10px}
+.ltitle{font-size:22px;font-weight:700;text-align:center;margin-bottom:4px}
+.lsub{font-size:14px;color:var(--tx2);text-align:center;margin-bottom:30px}
+
+/* FORM ELEMENTS */
+.fgrp{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.flbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--tx2)}
+.fi{width:100%;padding:12px 15px;border:1.5px solid var(--bdr);border-radius:var(--r2);font-size:15px;font-family:inherit;color:var(--tx);background:#fff;outline:none;transition:border-color var(--tr),box-shadow var(--tr)}
+.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,91,219,.1)}
+.fi::placeholder{color:var(--tx3)}
+textarea.fi{resize:vertical;min-height:86px;line-height:1.5}
+
+/* BUTTONS */
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:13px;border:none;border-radius:var(--r2);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all var(--tr);letter-spacing:.1px}
+.btn-b{background:var(--blue);color:#fff}
+.btn-b:hover{background:var(--bluedk);box-shadow:0 4px 16px rgba(59,91,219,.3);transform:translateY(-1px)}
+.btn-g{background:var(--grn);color:#fff}
+.btn-g:hover{background:#0a8059;box-shadow:0 4px 16px rgba(15,155,106,.3);transform:translateY(-1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.lerr{font-size:13px;color:var(--red);text-align:center;min-height:18px;margin-top:8px}
+
+/* ── TOPBAR ──────────────────────────────────── */
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:58px;position:sticky;top:0;z-index:200;box-shadow:0 1px 5px rgba(30,40,90,.07)}
+.brand{font-size:16px;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:7px}
+.brand-n{color:var(--tx)}
+.tbr{display:flex;align-items:center;gap:8px}
+.chip{display:flex;align-items:center;gap:7px;background:var(--bluelt);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;color:var(--blue);white-space:nowrap;max-width:200px;overflow:hidden}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;animation:pulse 2s infinite}
+.cdot.live{background:var(--grn)}.cdot.nl{background:var(--purp)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.btn-out{font-size:13px;color:var(--tx2);background:none;border:1.5px solid var(--bdr);border-radius:999px;padding:5px 13px;cursor:pointer;font-family:inherit;transition:all var(--tr);white-space:nowrap}
+.btn-out:hover{border-color:var(--red);color:var(--red)}
+
+/* ── MAIN LAYOUT ─────────────────────────────── */
+.main{max-width:860px;margin:0 auto;padding:24px 14px 80px}
+
+/* ── TABS ────────────────────────────────────── */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--card);border-radius:var(--r);padding:5px;box-shadow:var(--sh);margin-bottom:20px;gap:4px}
+.tab{padding:10px 6px;border:none;background:none;border-radius:calc(var(--r) - 4px);cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;color:var(--tx2);transition:all var(--tr);display:flex;align-items:center;justify-content:center;gap:5px}
+.tab.on{background:var(--blue);color:#fff;box-shadow:0 2px 10px rgba(59,91,219,.25)}
+.tab:not(.on):hover{background:var(--bluelt);color:var(--blue)}
+
+/* ── CARD ────────────────────────────────────── */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.card.anim{animation:fadeUp .25s ease both}
+.ch{padding:16px 20px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:11px}
+.ci{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.ci.b{background:var(--bluelt)}.ci.g{background:var(--grnlt)}.ci.p{background:var(--purplt)}
+.ct{font-size:14px;font-weight:700}.cs{font-size:12.5px;color:var(--tx2);margin-top:1px}
+.cb{padding:20px}
+
+/* PAGE */
+.page{display:none}.page.on{display:block}
+
+/* RULE PILL */
+.rule{display:inline-flex;align-items:flex-start;gap:6px;background:var(--ornlt);color:var(--orn);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:600;margin-bottom:16px;line-height:1.4;width:100%}
+
+/* ALERTS */
+.alrt{border-radius:var(--r2);padding:12px 15px;font-size:13px;font-weight:500;display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;line-height:1.4}
+.alrt.d{background:var(--redlt);color:var(--red);border:1px solid #ffc9c9}
+.alrt.s{background:var(--grnlt);color:var(--grn);border:1px solid #b2f2d9}
+.alrt.w{background:var(--ornlt);color:var(--orn);border:1px solid #ffd8a8}
+
+/* SUCCESS BOX */
+.sbox{display:none;text-align:center;background:var(--grnlt);border:1px solid #b2f2d9;border-radius:var(--r2);padding:18px;margin-top:14px}
+.sbox.on{display:block;animation:fadeUp .28s ease both}
+.sbox .si{font-size:28px;margin-bottom:5px}.sbox .st{font-weight:700;color:var(--grn);font-size:14.5px}
+.sbox .sd{font-size:12.5px;color:var(--tx2);margin-top:3px;line-height:1.4}
+
+/* ── CALENDAR ────────────────────────────────── */
+.cpw{margin-bottom:4px}
+.cpnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cptitle{font-size:15px;font-weight:700}
+.cnbtn{background:none;border:1.5px solid var(--bdr);border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all var(--tr);color:var(--tx2)}
+.cnbtn:hover{background:var(--bluelt);border-color:var(--blue);color:var(--blue)}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.chd{text-align:center;font-size:10.5px;font-weight:700;color:var(--tx3);text-transform:uppercase;padding:4px 0}
+.cc{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;transition:all var(--tr);border:1.5px solid transparent;user-select:none;position:relative;-webkit-tap-highlight-color:transparent}
+.cc.empty{cursor:default;pointer-events:none}
+.cc.dis{color:var(--tx3)!important;cursor:not-allowed;background:none!important;border-color:transparent!important;opacity:.5}
+.cc.tod{border-color:var(--blue);color:var(--blue);font-weight:700}
+.cc.sel{background:var(--blue)!important;color:#fff!important;font-weight:700;box-shadow:0 2px 8px rgba(59,91,219,.35)}
+.cc.sel.multi{background:var(--grn)!important;box-shadow:0 2px 8px rgba(15,155,106,.35)}
+.cc.hoff{background:rgba(59,91,219,.09);color:var(--blue)}
+.cc.happ{background:var(--grnlt);color:var(--grn)}
+.cc.hpen{background:var(--ornlt);color:var(--orn)}
+.cc:not(.dis):not(.empty):not(.sel):hover{background:var(--bluelt);color:var(--blue)}
+.dotrow{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);display:flex;gap:2px}
+.dot{width:4px;height:4px;border-radius:50%}
+.dot.l{background:var(--blue)}.dot.n{background:var(--purp)}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:24px}
+.chip2{display:inline-flex;align-items:center;gap:5px;background:var(--bluelt);color:var(--blue);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600}
+.chip2.g{background:var(--grnlt);color:var(--grn)}
+.rm{cursor:pointer;font-size:13px;opacity:.65;margin-left:1px}.rm:hover{opacity:1}
+
+/* ── WEEK GRID ───────────────────────────────── */
+.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+@media(max-width:520px){.wg{grid-template-columns:repeat(2,1fr)}}
+.dc{border:1.5px solid var(--bdr);border-radius:var(--r2);overflow:hidden}
+.dh{background:var(--bg);padding:7px 11px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--tx2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.ddlbl{font-size:10px;font-weight:500;color:var(--tx3)}
+.db{padding:9px 11px}
+.gl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
+.gl.lv{color:var(--blue)}.gl.nl{color:var(--purp)}
+.ab{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;padding:2px 8px;border-radius:999px;font-weight:500;margin:2px 2px 2px 0}
+.ab.lv{background:var(--bluelt);color:var(--blue)}.ab.nl{background:var(--purplt);color:var(--purp)}
+.abe{font-size:11.5px;color:var(--tx3);font-style:italic}
+.sc{font-size:9.5px;color:var(--tx3);margin-left:3px;font-weight:400}
+
+/* PTO LIST */
+.ptol{display:flex;flex-direction:column;gap:7px}
+.ptor{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border:1.5px solid var(--bdr);border-radius:var(--r2);font-size:13px;animation:fadeUp .2s ease both;gap:8px}
+.ptol-l{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ptod{font-weight:700;font-size:13.5px;white-space:nowrap}.ptor2{color:var(--tx2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbadge{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;flex-shrink:0}
+.sp{background:var(--ornlt);color:var(--orn)}.sa{background:var(--grnlt);color:var(--grn)}.sdis{background:var(--redlt);color:var(--red)}
+
+/* LEGEND */
+.leg{display:flex;gap:13px;flex-wrap:wrap;margin-top:11px}
+.li{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--tx2)}
+.ld{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* SEARCH */
+.sw{position:relative}
+.sr{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r2);box-shadow:var(--sh2);z-index:50;max-height:200px;overflow-y:auto}
+.si{padding:10px 14px;cursor:pointer;font-size:13.5px;transition:background var(--tr);border-bottom:1px solid var(--bdr)}
+.si:last-child{border-bottom:none}.si:hover{background:var(--bluelt)}
+.se{font-size:11px;color:var(--tx3);margin-top:1px}
+
+/* MISC */
+.div{height:1px;background:var(--bdr);margin:16px 0}
+.sttl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);margin-bottom:11px}
+.empty{text-align:center;padding:24px 16px;color:var(--tx3)}
+.empty .ei{font-size:30px;margin-bottom:6px}.empty p{font-size:13.5px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);max-width:calc(100vw - 32px);background:#1a1d2e;color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;transition:transform .32s cubic-bezier(.34,1.56,.64,1),opacity .32s ease;opacity:0;pointer-events:none}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ts{background:var(--grn)}.toast.te{background:var(--red)}.toast.tw{background:var(--orn)}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+  .topbar{padding:0 13px;height:54px}
+  .brand-n{display:none}
+  .main{padding:16px 10px 80px}
+  .lcard{padding:36px 22px 28px}
+  .cb{padding:16px}
+  .ch{padding:13px 16px}
+  .tab{font-size:11.5px;padding:9px 4px;gap:3px}
+  .cnbtn{width:28px;height:28px}
+  .cptitle{font-size:14px}
+}
+@media(max-width:360px){
+  .tab{font-size:10.5px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="lcard">
+    <div class="llogo">⏰</div>
+    <div class="ltitle">Reminders Portal</div>
+    <p class="lsub">Agent Self-Service System</p>
+    <div class="fgrp">
+      <label class="flbl">Employee ID</label>
+      <input type="text" id="loginInput" class="fi" placeholder="e.g. 2025-0338" autocomplete="off" inputmode="text"/>
+    </div>
+    <button class="btn btn-b" id="loginBtn" onclick="doLogin()">Login</button>
+    <div id="loginErr" class="lerr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appPage" class="hide">
+  <div class="topbar">
+    <div class="brand">⏰ <span class="brand-n">Reminders Portal</span></div>
+    <div class="tbr">
+      <div class="chip"><div class="cdot" id="chipDot"></div><span id="chipName">Agent</span></div>
+      <button class="btn-out" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="tabs">
+      <button class="tab on" onclick="goTab('off',this)">📅 Weekly Off</button>
+      <button class="tab" onclick="goTab('pto',this)">🏖️ Apply PTO</button>
+      <button class="tab" onclick="goTab('view',this)">🗓️ Schedule</button>
+    </div>
+
+    <!-- WEEKLY OFF -->
+    <div id="tab-off" class="page on">
+      <div class="card anim">
+        <div class="ch"><div class="ci b">📅</div>
+          <div><div class="ct">Register Weekly Off</div><div class="cs">Pick a date from the calendar</div></div>
+        </div>
+        <div class="cb">
+          <div class="rule">⚠️ At least <b>3 days</b> in advance · <b>1 off per week</b> · Max <b>2 Live + 2 Non-Live</b> per date · No Tuesdays or Sundays</div>
+          <div id="offCalWrap" class="cpw"></div>
+          <div id="offChips" class="chips"></div>
+          <div id="offAlrt" class="alrt hide"></div>
+          <button class="btn btn-b" id="btnOff" onclick="submitOff()" style="margin-top:14px" disabled>Submit Schedule Off</button>
+          <div id="offSbox" class="sbox">
+            <div class="si">✅</div><div class="st">Schedule Off Registered!</div>
+            <div class="sd" id="offSboxDetail">Your off has been registered.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PTO -->
+    <div id="tab-pto" class="page">
+      <div class="card anim">
+        <div class="ch"><div class="ci g">🏖️</div>
+          <div><div class="ct">Apply for PTO</div><div class="cs">Select one or more dates</div></div>
+        </div>
+        <div class="cb">
+          <div class="rule">⚠️ At least <b>5 days</b> in advance · Max <b>2 Live + 2 Non-Live</b> per date · No Tuesdays or Sundays · You'll receive an email upon approval</div>
+          <div id="ptoCalWrap" class="cpw"></div>
+          <div id="ptoChips" class="chips"></div>
+          <div class="fgrp" style="margin-top:14px">
+            <label class="flbl">Reason for Leave</label>
+            <textarea id="ptoReason" class="fi" placeholder="Briefly describe your reason..."></textarea>
+          </div>
+          <div id="ptoAlrt" class="alrt hide"></div>
+          <button class="btn btn-g" id="btnPTO" onclick="submitPTO()" disabled>Submit PTO Request</button>
+          <div id="ptoSbox" class="sbox">
+            <div class="si">✅</div><div class="st">PTO Request Submitted!</div>
+            <div class="sd">Your request is pending approval. You'll receive an email once reviewed.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW -->
+    <div id="tab-view" class="page">
+      <div class="card">
+        <div class="cb" style="padding-bottom:14px">
+          <div class="sttl">🔍 Search Agent</div>
+          <div class="sw">
+            <input type="text" class="fi" id="srchIn" placeholder="Type name or employee ID…" oninput="doSearch()" autocomplete="off"/>
+            <div id="srchRes" class="sr hide"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div class="ci b">📋</div>
+          <div><div class="ct">Schedule Off — This Week</div><div class="cs" id="wkLabel">Loading…</div></div>
+        </div>
+        <div class="cb">
+          <div id="weekGrid" class="wg"><div style="grid-column:1/-1"><div class="sk" style="height:80px"></div></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div class="ci g">🗓️</div>
+          <div><div class="ct">PTO Calendar</div><div class="cs" id="vcSub">Your approved &amp; pending leave</div></div>
+        </div>
+        <div class="cb">
+          <div id="viewCalWrap" class="cpw"></div>
+          <div class="leg">
+            <div class="li"><div class="ld" style="background:var(--grn)"></div>Approved PTO</div>
+            <div class="li"><div class="ld" style="background:var(--orn)"></div>Pending PTO</div>
+            <div class="li"><div class="ld" style="background:var(--blue)"></div>Schedule Off</div>
+          </div>
+          <div class="div"></div>
+          <div class="sttl">PTO Requests</div>
+          <div id="ptoList" class="ptol"><div class="sk" style="height:50px"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── REPLACE THIS WITH YOUR DEPLOYED WEB APP URL ─────────
+const API = "https://script.google.com/macros/s/AKfycbxNpVVX12XkchdGl8t-KFYjUFptDCUGBTZNrtftaavpY7jNukGLdszQg-Lx4scGRDal/exec";
+
+// ─── STATE ───────────────────────────────────────────────
+let me=null, allAgents=[], allOffs=[], allPtos=[];
+let offSel=null;
+let ptoSel=new Set();
+let offY, offM, ptoY, ptoM, vcY, vcM;
+let viewEmpId=null;
+
+const TODAY=new Date(); TODAY.setHours(0,0,0,0);
+
+function initM(){const n=new Date();offY=ptoY=vcY=n.getFullYear();offM=ptoM=vcM=n.getMonth();}
+initM();
+
+// ─── DATE HELPERS ─────────────────────────────────────────
+// Always build date strings manually — never pass Date objects to Sheets
+function ymd(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
+function p2(n){return String(n).padStart(2,'0');}
+// Parse "yyyy-MM-dd" safely without timezone issues
+function parseDMY(s){const[y,m,d]=s.split('-').map(Number);const r=new Date(y,m-1,d);r.setHours(0,0,0,0);return r;}
+function fmtS(s){try{return parseDMY(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}catch(e){return s;}}
+function fmtL(s){try{return parseDMY(s).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});}catch(e){return s;}}
+function isoWk(d){
+  const u=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const dn=u.getUTCDay()||7;u.setUTCDate(u.getUTCDate()+4-dn);
+  const ys=new Date(Date.UTC(u.getUTCFullYear(),0,1));
+  return Math.ceil((((u-ys)/86400000)+1)/7);
+}
+function weekDays(from){
+  const d=new Date(from);const dow=d.getDay();
+  const mon=new Date(d);mon.setDate(d.getDate()-((dow+6)%7));
+  return Array.from({length:7},(_,i)=>{const dd=new Date(mon);dd.setDate(mon.getDate()+i);return dd;});
+}
+
+// ─── API FETCH — with redirect:follow + safe JSON parse ───
+async function apiFetch(url, opts){
+  // For POST to Apps Script we MUST follow redirects
+  const options = opts ? {...opts, redirect:'follow'} : {redirect:'follow'};
+  const res = await fetch(url, options);
+  const text = await res.text();
+  // Strip any HTML wrapper if Apps Script returns it (shouldn't, but safety)
+  const jsonStart = text.indexOf('{');
+  const jsonEnd   = text.lastIndexOf('}');
+  if(jsonStart === -1 || jsonEnd === -1) throw new Error('Non-JSON response: '+text.substring(0,100));
+  return JSON.parse(text.substring(jsonStart, jsonEnd+1));
+}
+
+// ─── LOGIN ────────────────────────────────────────────────
+async function doLogin(){
+  const id=document.getElementById('loginInput').value.trim();
+  if(!id){setLE('Please enter your Employee ID.');return;}
+  const btn=document.getElementById('loginBtn');
+  btn.innerHTML='<span class="ld"></span>Logging in…';btn.disabled=true;
+  try{
+    const d=await apiFetch(API);
+    if(d.error){setLE('Server error: '+d.error);btn.innerHTML='Login';btn.disabled=false;return;}
+    allAgents=d.agents||[];allOffs=d.allOffs||[];allPtos=d.allPtos||[];
+    const agent=allAgents.find(a=>a.empId===id);
+    if(!agent){setLE('Employee ID not found. Please check and try again.');btn.innerHTML='Login';btn.disabled=false;return;}
+    me=agent;viewEmpId=me.empId;
+    bootApp();
+  }catch(e){setLE('Connection error. Please try again.');btn.innerHTML='Login';btn.disabled=false;}
+}
+function setLE(m){document.getElementById('loginErr').textContent=m;}
+document.getElementById('loginInput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ─── BOOT ─────────────────────────────────────────────────
+function bootApp(){
+  document.getElementById('loginPage').classList.add('hide');
+  document.getElementById('appPage').classList.remove('hide');
+  const fn=(me.name||'').split(',')[0];
+  document.getElementById('chipName').textContent=fn+' · '+(me.group==='live'?'Live':'Non-Live');
+  document.getElementById('chipDot').className='cdot '+(me.group==='live'?'live':'nl');
+  renderOffCal();renderPTOCal();
+  setWkLabel();renderWeekGrid();renderViewCal();renderPTOList(me.empId);
+}
+
+// ─── TABS ─────────────────────────────────────────────────
+function goTab(t,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');document.getElementById('tab-'+t).classList.add('on');
+  if(t==='view') refresh();
+}
+
+async function refresh(){
+  try{
+    const d=await apiFetch(API+'?t='+Date.now());
+    if(!d.error){allAgents=d.agents||[];allOffs=d.allOffs||[];allPtos=d.allPtos||[];}
+    setWkLabel();renderWeekGrid();renderViewCal();renderPTOList(viewEmpId||me.empId);
+  }catch(e){}
+}
+
+// ─── CALENDAR BUILDER ─────────────────────────────────────
+function buildCal(id, y, m, onP, onN, classOf, onClick){
+  const wrap=document.getElementById(id);if(!wrap)return;
+  wrap.innerHTML='';
+  const nav=document.createElement('div');nav.className='cpnav';
+  const pb=document.createElement('button');pb.className='cnbtn';pb.innerHTML='&#8249;';pb.onclick=onP;
+  const nb=document.createElement('button');nb.className='cnbtn';nb.innerHTML='&#8250;';nb.onclick=onN;
+  const tl=document.createElement('div');tl.className='cptitle';
+  tl.textContent=new Date(y,m).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  nav.append(pb,tl,nb);wrap.appendChild(nav);
+
+  const g=document.createElement('div');g.className='cgrid';
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>{
+    const h=document.createElement('div');h.className='chd';h.textContent=d;g.appendChild(h);
+  });
+
+  const first=new Date(y,m,1).getDay();
+  const days=new Date(y,m+1,0).getDate();
+  const todS=ymd(TODAY);
+
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cc empty';g.appendChild(e);}
+
+  for(let d=1;d<=days;d++){
+    const dt=new Date(y,m,d);dt.setHours(0,0,0,0);
+    const ds=ymd(dt);const dow=dt.getDay();
+    const cell=document.createElement('div');cell.className='cc';
+    cell.textContent=d;
+
+    const extra=(classOf?classOf(ds,dow,dt):[]);
+    if(ds===todS)extra.push('tod');
+    extra.forEach(c=>cell.classList.add(c));
+
+    if(!cell.classList.contains('dis')){
+      cell.addEventListener('click',()=>onClick&&onClick(ds,dow,dt));
+    }
+
+    // Off slot dots
+    const dayOffs=allOffs.filter(o=>o.date===ds);
+    if(dayOffs.length){
+      const dr=document.createElement('div');dr.className='dotrow';
+      dayOffs.slice(0,3).forEach(o=>{
+        const dot=document.createElement('div');
+        dot.className='dot '+(o.group==='live'?'l':'n');
+        dr.appendChild(dot);
+      });
+      cell.appendChild(dr);
+    }
+    g.appendChild(cell);
+  }
+  wrap.appendChild(g);
+}
+
+// ─── OFF CALENDAR ─────────────────────────────────────────
+function renderOffCal(){
+  buildCal('offCalWrap',offY,offM,
+    ()=>{offM--;if(offM<0){offM=11;offY--;}renderOffCal();},
+    ()=>{offM++;if(offM>11){offM=0;offY++;}renderOffCal();},
+    (ds,dow,dt)=>{
+      const cls=[];
+      if(dow===0||dow===2){cls.push('dis');return cls;}
+      const diff=Math.round((dt-TODAY)/86400000);
+      if(diff<3){cls.push('dis');return cls;}
+      if(offSel===ds)cls.push('sel');
+      else if(allOffs.find(o=>o.date===ds))cls.push('hoff');
+      return cls;
+    },
+    (ds,dow,dt)=>{
+      if(dow===0||dow===2)return;
+      if(Math.round((dt-TODAY)/86400000)<3)return;
+      offSel=(offSel===ds)?null:ds;
+      renderOffCal();renderOffChips();
+      document.getElementById('btnOff').disabled=!offSel;
+      hideAlrt('offAlrt');document.getElementById('offSbox').classList.remove('on');
+    }
+  );
+}
+function renderOffChips(){
+  const w=document.getElementById('offChips');w.innerHTML='';
+  if(!offSel)return;
+  const c=document.createElement('div');c.className='chip2';
+  c.innerHTML='📅 '+fmtS(offSel)+' <span class="rm" onclick="clearOff()">✕</span>';
+  w.appendChild(c);
+}
+function clearOff(){offSel=null;renderOffCal();renderOffChips();document.getElementById('btnOff').disabled=true;}
+
+// ─── PTO CALENDAR ─────────────────────────────────────────
+function renderPTOCal(){
+  buildCal('ptoCalWrap',ptoY,ptoM,
+    ()=>{ptoM--;if(ptoM<0){ptoM=11;ptoY--;}renderPTOCal();},
+    ()=>{ptoM++;if(ptoM>11){ptoM=0;ptoY++;}renderPTOCal();},
+    (ds,dow,dt)=>{
+      const cls=[];
+      if(dow===0||dow===2){cls.push('dis');return cls;}
+      if(Math.round((dt-TODAY)/86400000)<5){cls.push('dis');return cls;}
+      if(ptoSel.has(ds)){cls.push('sel');cls.push('multi');}
+      return cls;
+    },
+    (ds,dow,dt)=>{
+      if(dow===0||dow===2)return;
+      if(Math.round((dt-TODAY)/86400000)<5)return;
+      if(ptoSel.has(ds))ptoSel.delete(ds);else ptoSel.add(ds);
+      renderPTOCal();renderPTOChips();
+      document.getElementById('btnPTO').disabled=ptoSel.size===0;
+      hideAlrt('ptoAlrt');document.getElementById('ptoSbox').classList.remove('on');
+    }
+  );
+}
+function renderPTOChips(){
+  const w=document.getElementById('ptoChips');w.innerHTML='';
+  [...ptoSel].sort().forEach(ds=>{
+    const c=document.createElement('div');c.className='chip2 g';
+    c.innerHTML='📅 '+fmtS(ds)+' <span class="rm" onclick="rmPTO(\''+ds+'\')">✕</span>';
+    w.appendChild(c);
+  });
+}
+function rmPTO(ds){ptoSel.delete(ds);renderPTOCal();renderPTOChips();document.getElementById('btnPTO').disabled=ptoSel.size===0;}
+
+// ─── VIEW CALENDAR ────────────────────────────────────────
+function renderViewCal(){
+  const eid=viewEmpId||me.empId;
+  const myP=allPtos.filter(p=>p.empId===eid);
+  const myO=allOffs.filter(o=>o.empId===eid);
+  buildCal('viewCalWrap',vcY,vcM,
+    ()=>{vcM--;if(vcM<0){vcM=11;vcY--;}renderViewCal();},
+    ()=>{vcM++;if(vcM>11){vcM=0;vcY++;}renderViewCal();},
+    (ds)=>{
+      const cls=[];
+      const pto=myP.find(p=>p.date===ds);
+      if(pto)cls.push(pto.status==='Approved'?'happ':'hpen');
+      if(myO.find(o=>o.date===ds))cls.push('hoff');
+      return cls;
+    },
+    null
+  );
+}
+
+// ─── WEEK GRID ────────────────────────────────────────────
+function setWkLabel(){
+  const wk=weekDays(new Date());
+  const f=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('wkLabel').textContent=f(wk[0])+' – '+f(wk[6]);
+}
+function renderWeekGrid(){
+  const wk=weekDays(new Date());
+  const names=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const grid=document.getElementById('weekGrid');grid.innerHTML='';
+  wk.forEach((dt,i)=>{
+    const ds=ymd(dt);
+    const lv=allOffs.filter(o=>o.date===ds&&o.group==='live');
+    const nl=allOffs.filter(o=>o.date===ds&&o.group==='nonlive');
+    const dc=document.createElement('div');dc.className='dc';
+    dc.innerHTML=`<div class="dh">${names[i]||'Day'}<span class="ddlbl">${dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></div>
+    <div class="db">
+      <div class="gl lv">Live<span class="sc">(${lv.length}/2)</span></div>
+      <div>${lv.length?lv.map(o=>`<span class="ab lv">👤 ${(o.name||'').split(',')[0]}</span>`).join(''):'<span class="abe">None</span>'}</div>
+      <div class="gl nl" style="margin-top:7px">Non-Live<span class="sc">(${nl.length}/2)</span></div>
+      <div>${nl.length?nl.map(o=>`<span class="ab nl">👤 ${(o.name||'').split(',')[0]}</span>`).join(''):'<span class="abe">None</span>'}</div>
+    </div>`;
+    grid.appendChild(dc);
+  });
+}
+
+// ─── PTO LIST ─────────────────────────────────────────────
+function renderPTOList(eid){
+  const list=document.getElementById('ptoList');
+  const mine=allPtos.filter(p=>p.empId===eid).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!mine.length){list.innerHTML='<div class="empty"><div class="ei">📋</div><p>No PTO requests yet.</p></div>';return;}
+  list.innerHTML=mine.map(p=>{
+    const sc=(p.status||'pending').toLowerCase();
+    const cls=sc==='approved'?'sa':sc==='disapproved'?'sdis':'sp';
+    return `<div class="ptor"><div class="ptol-l"><div class="ptod">📅 ${fmtS(p.date)}</div><div class="ptor2">${p.reason||'—'}</div></div><div class="sbadge ${cls}">${p.status||'Pending'}</div></div>`;
+  }).join('');
+}
+
+// ─── SUBMIT OFF ───────────────────────────────────────────
+async function submitOff(){
+  if(!offSel){showAlrt('offAlrt','w','Please select a date.');return;}
+  const btn=document.getElementById('btnOff');
+  btn.innerHTML='<span class="ld"></span>Submitting…';btn.disabled=true;
+  try{
+    const res=await apiFetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},  // avoid CORS preflight
+      body:JSON.stringify({action:'registerOff',empId:me.empId,name:me.name,group:me.group,date:offSel})
+    });
+    if(res.success){
+      document.getElementById('offSboxDetail').textContent='Your off on '+fmtS(offSel)+' is registered!';
+      document.getElementById('offSbox').classList.add('on');
+      showToast('✅ Off registered for '+fmtS(offSel),'ts');
+      offSel=null;renderOffCal();renderOffChips();
+      await refresh();
+    }else{
+      showAlrt('offAlrt','d',res.message||'Submission failed. Please try again.');
+      showToast(res.message||'Error','te');
+    }
+  }catch(e){showAlrt('offAlrt','d','Connection error. Please try again.');}
+  btn.innerHTML='Submit Schedule Off';btn.disabled=!offSel;
+}
+
+// ─── SUBMIT PTO ───────────────────────────────────────────
+async function submitPTO(){
+  const dates=[...ptoSel].sort();
+  const reason=document.getElementById('ptoReason').value.trim();
+  if(!dates.length){showAlrt('ptoAlrt','w','Please select at least one date.');return;}
+  if(!reason){showAlrt('ptoAlrt','w','Please provide a reason.');return;}
+  const btn=document.getElementById('btnPTO');
+  btn.innerHTML='<span class="ld"></span>Submitting…';btn.disabled=true;
+  try{
+    const res=await apiFetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'submitPTO',empId:me.empId,name:me.name,group:me.group,dates,reason})
+    });
+    if(res.success){
+      document.getElementById('ptoSbox').classList.add('on');
+      showToast('✅ PTO submitted for '+dates.length+' date(s)','ts');
+      if(res.message&&res.message.includes('Issues'))showAlrt('ptoAlrt','w',res.message);
+      ptoSel=new Set();document.getElementById('ptoReason').value='';
+      renderPTOCal();renderPTOChips();
+      await refresh();
+    }else{
+      showAlrt('ptoAlrt','d',res.message||'Submission failed. Please try again.');
+      showToast(res.message||'Error','te');
+    }
+  }catch(e){showAlrt('ptoAlrt','d','Connection error. Please try again.');}
+  btn.innerHTML='Submit PTO Request';btn.disabled=ptoSel.size===0;
+}
+
+// ─── SEARCH ───────────────────────────────────────────────
+function doSearch(){
+  const q=document.getElementById('srchIn').value.trim().toLowerCase();
+  const sr=document.getElementById('srchRes');
+  if(!q){sr.classList.add('hide');viewEmpId=me.empId;renderPTOList(me.empId);renderViewCal();document.getElementById('vcSub').textContent='Your approved & pending leave';return;}
+  const hits=allAgents.filter(a=>a.name.toLowerCase().includes(q)||a.empId.toLowerCase().includes(q));
+  if(!hits.length){sr.classList.add('hide');return;}
+  sr.innerHTML=hits.slice(0,7).map(a=>`<div class="si" onclick="pickAgent('${a.empId}','${eq(a.name)}')"><div>${a.name}</div><div class="se">${a.empId} · ${a.group}</div></div>`).join('');
+  sr.classList.remove('hide');
+}
+function pickAgent(empId,name){
+  document.getElementById('srchIn').value=name;
+  document.getElementById('srchRes').classList.add('hide');
+  viewEmpId=empId;
+  document.getElementById('vcSub').textContent=name+' — leave history';
+  renderPTOList(empId);renderViewCal();
+}
+function eq(s){return s.replace(/'/g,"\\'");}
+document.addEventListener('click',e=>{if(!e.target.closest('.sw'))document.getElementById('srchRes').classList.add('hide');});
+
+// ─── LOGOUT ───────────────────────────────────────────────
+function doLogout(){
+  me=null;allAgents=[];allOffs=[];allPtos=[];
+  offSel=null;ptoSel=new Set();viewEmpId=null;
+  document.getElementById('appPage').classList.add('hide');
+  document.getElementById('loginPage').classList.remove('hide');
+  document.getElementById('loginInput').value='';
+  document.getElementById('loginErr').textContent='';
+  document.getElementById('loginBtn').innerHTML='Login';
+  document.getElementById('loginBtn').disabled=false;
+  ['offSbox','ptoSbox'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  ['offAlrt','ptoAlrt'].forEach(hideAlrt);
+  initM();
+}
+
+// ─── HELPERS ──────────────────────────────────────────────
+function showAlrt(id,t,msg){const el=document.getElementById(id);el.className='alrt '+t;el.innerHTML='<span>'+(t==='d'?'⛔':t==='w'?'⚠️':'✅')+'</span><span>'+msg+'</span>';}
+function hideAlrt(id){const el=document.getElementById(id);el.className='alrt hide';el.textContent='';}
+let toastT;
+function showToast(msg,cls='ts'){
+  clearTimeout(toastT);
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast on '+cls;
+  toastT=setTimeout(()=>t.classList.remove('on'),3500);
+}
+</script>
+</body>
+</html>
